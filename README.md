@@ -12,7 +12,7 @@ A simple browser-based game where you play **Snake, Water, Gun** against the com
 4. Keep track of your score and try to beat the computer!  
 
 ## Play Online
-You can play it live here:(https://the-vivekkumar.github.io/snake-water-gun/)
+You can play it live here: https://the-vivekkumar.github.io/snake-water-gun/
 
 ## Features
 - Simple and fun gameplay  
