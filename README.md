@@ -1,4 +1,4 @@
-# Snake Water Gun Game 🐍💧✂️
+# Snake Water Gun Game 🐍💧🔫
 
 A simple browser-based game where you play **Snake, Water, Gun** against the computer.  
 
