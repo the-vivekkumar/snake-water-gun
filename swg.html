@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Snake Water Gun GAME</title>
+<link href="https://fonts.googleapis.com/css2?family=Rock+Salt&family=Orbitron:wght@600&family=Permanent+Marker&family=Bangers&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Razor&display=swap" rel="stylesheet">
+<style>
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  margin: 0;
+  height: 100vh;
+  background: black;
+  color: white;
+  overflow: hidden;
+  position: relative;
+}
+body::before {
+  content: "";
+  position: absolute;
+  top:0; left:0; right:0; bottom:0;
+  background: url("https://www.transparenttextures.com/patterns/stardust.png");
+  animation: moveStars 60s linear infinite;
+  z-index: -1;
+}
+@keyframes moveStars { from { background-position:0 0;} to{background-position:10000px 10000px;} }
+
+h1 span { font-size:40px; font-weight:bold; }
+.snake { font-family:'Rock Salt', cursive; color:#00FF00; }
+.water { font-family:'Orbitron', sans-serif; color:#00BFFF; }
+.gun { font-family:'Permanent Marker', cursive; color:#FF4500; }
+.game { color:#FFD700; font-size:36px; display:block; margin-top:10px; }
+
+/* Scoreboard font style only */
+#scoreboard {
+  position: absolute;
+  top: 10px;
+  right: 20px;
+  text-align: right;
+  font-size: 22px;
+  color: #FFD700;
+  z-index: 10;
+  font-family: 'Bangers', cursive;
+}
+#totalMatches { font-family:'Orbitron',sans-serif; color:#FFA500; font-weight:bold; }
+#highScore { font-family:'Orbitron',sans-serif; color:#00FFFF; font-weight:bold; }
+#playerScore { font-family:'Permanent Marker',cursive; color:#00FF7F; font-weight:bold; }
+#opponentScore { font-family:'Bangers',cursive; color:#FF6347; font-weight:bold; }
+
+/* Start Button */
+#startBtn {
+  font-family: 'Razor', cursive;
+  font-size: 32px;
+  font-weight: bold;
+  padding: 20px 60px;
+  background-color: #FFFFFF; 
+  border: none;
+  border-radius: 20px;
+  color: black;
+  cursor: pointer;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  animation: bounce 1s infinite;
+}
+#startBtn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+}
+@keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+#choices {
+  margin-top: 20px;
+}
+#choices button {
+  font-size: 22px;
+  font-weight: bold;
+  padding: 15px 40px;
+  margin: 10px;
+  border-radius: 15px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+#choices button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+#choices button:nth-child(1) { background-color: #00FF00; color:white; }   
+#choices button:nth-child(2) { background-color: #00BFFF; color:white; }   
+#choices button:nth-child(3) { background-color: #FF0000; color:white; }   
+
+#endBtn {
+  font-size:18px; margin:10px; padding:10px 20px;
+  cursor:pointer; border:none; border-radius:8px;
+  background: linear-gradient(45deg,#1e3c72,#2a5298); color:white;
+}
+
+#result {
+  margin-top:20px; font-size:28px; font-weight:bold;
+  animation: rainbow 3s infinite linear;
+}
+@keyframes rainbow { 0%{color:red;}25%{color:yellow;}50%{color:lime;}75%{color:cyan;}100%{color:magenta;} }
+
+.player, .opponent {
+  display:inline-block; 
+  margin:20px;
+  text-align:center;
+}
+.player img, .opponent img { width:150px; height:150px; display:block; margin:0 auto; }
+#player-label,#opponent-label{ margin-top:10px; font-size:24px; }
+
+#popup {
+  position: fixed; top:0; left:0; right:0; bottom:0;
+  display: none;
+  align-items: center; justify-content: center;
+  flex-direction: column;
+  z-index: 9999;
+  color: white; text-align: center; padding: 20px;
+  font-family: 'Bangers', cursive;
+}
+#popup h2 {
+  font-size:60px;
+  font-family:'Permanent Marker', cursive;
+  color:#FFD700;
+  margin-bottom:20px;
+  text-shadow: 3px 3px 10px black;
+}
+#popup p {
+  font-size:32px;
+  margin-bottom:30px;
+  color:#FFFAFA;
+  text-shadow: 2px 2px 8px black;
+}
+#popup button {
+  font-size:26px;
+  padding:14px 30px;
+  background:linear-gradient(45deg,#FF416C,#FF4B2B);
+  border:none;
+  border-radius:12px;
+  color:white;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.confetti {
+  position:absolute; width:10px; height:10px;
+  animation:fall 2s linear infinite;
+}
+@keyframes fall {
+  0% { transform:translateY(0) rotate(0deg); opacity:1; }
+  100% { transform:translateY(600px) rotate(360deg); opacity:0; }
+}
+</style>
+</head>
+<body>
+
+<h1>
+  <span class="snake">Snake</span>
+  <span class="water">Water</span>
+  <span class="gun">Gun</span>
+  <span class="game">GAME</span>
+</h1>
+
+<div id="scoreboard">
+  Total Matches: <span id="totalMatches">0</span><br>
+  High Score: <span id="highScore">0</span><br>
+  You: <span id="playerScore">0</span><br>
+  Opponent: <span id="opponentScore">0</span>
+</div>
+
+<div id="controls">
+  <button id="startBtn" onclick="startGame()">Start</button>
+  <button id="endBtn" onclick="endGame()" style="display:none;">End Game</button>
+</div>
+
+<div id="choices" style="display:none;">
+  <button onclick="playGame('snake')">Snake</button>
+  <button onclick="playGame('water')">Water</button>
+  <button onclick="playGame('gun')">Gun</button>
+</div>
+
+<div class="player">
+  <img id="player-img" src="question.png" alt="Player choice" style="display:none;">
+  <h2 id="player-label" style="display:none;">You</h2>
+</div>
+
+<div class="opponent">
+  <img id="opponent-img" src="question.png" alt="Opponent choice" style="display:none;">
+  <h2 id="opponent-label" style="display:none;">Opponent</h2>
+</div>
+
+<div id="result"></div>
+
+<div id="popup">
+  <h2></h2>
+  <p id="joke"></p>
+  <button onclick="closePopup()">😂 Next Round</button>
+</div>
+
+<script>
+let gameActive=false, playerScore=0, opponentScore=0, totalMatches=0;
+let highScore = localStorage.getItem("swgHighScore") || 0;
+document.getElementById("highScore").innerText=highScore;
+document.getElementById("totalMatches").innerText=totalMatches;
+
+let winJokes = ["Opponent so weak, even a paper straw beats them 😂","Opponent Googling 'How to uninstall life' 🤣","Bro got clapped so hard, his ancestors felt it 💀","Opponent rage quit and became a monk 🧘","Opponent’s mom just texted: 'Stop embarrassing us' 📱"];
+let loseJokes = ["Bro got clapped like a pancake 😅","You lost faster than my WiFi 💀","Even NPCs are laughing at you 🤣","Try again, champ! 😬","You got rekt harder than my PC 🔥"];
+let drawJokes = ["It's a tie! The universe says: 'Try harder!' 😎","Draw! Even the stars couldn't decide ✨","No winner this time, everyone chill 😅","Equal power! Next round will be epic! ⚡","Stalemate! The fate of the world awaits 🌀"];
+
+let usedWin=[], usedLose=[], usedDraw=[];
+
+function startGame(){
+  gameActive=true;
+  document.getElementById("choices").style.display="block";
+  document.getElementById("player-img").style.display="none";
+  document.getElementById("opponent-img").style.display="none";
+  document.getElementById("player-label").style.display="none";
+  document.getElementById("opponent-label").style.display="none";
+  document.getElementById("player-img").src="question.png";
+  document.getElementById("opponent-img").src="question.png";
+  document.getElementById("startBtn").style.display="none";
+  document.getElementById("endBtn").style.display="inline-block";
+  document.getElementById("result").innerText="";
+}
+
+function endGame(){
+  gameActive=false;
+  document.getElementById("choices").style.display="none";
+  document.getElementById("player-img").style.display="none";
+  document.getElementById("opponent-img").style.display="none";
+  document.getElementById("player-label").style.display="none";
+  document.getElementById("opponent-label").style.display="none";
+  document.getElementById("result").innerText="";
+  document.querySelector("#popup h2").innerText="🎮 Game Over 🎮";
+  document.getElementById("joke").innerText="Thanks for playing! Come back soon!";
+  document.getElementById("popup").style.backgroundColor="blue";
+  document.getElementById("popup").style.display="flex";
+  document.getElementById("startBtn").style.display="inline-block";
+  document.getElementById("endBtn").style.display="none";
+}
+
+function playGame(playerChoice){
+  if(!gameActive) return;
+
+  document.getElementById("player-img").style.display="block";
+  document.getElementById("opponent-img").style.display="block";
+  document.getElementById("player-label").style.display="block";
+  document.getElementById("opponent-label").style.display="block";
+
+  totalMatches++;
+  document.getElementById("totalMatches").innerText = totalMatches;
+
+  const choices=['snake','water','gun'];
+  const compChoice=choices[Math.floor(Math.random()*3)];
+  const images={snake:"snake.jpg", water:"water.jpg", gun:"gun.jpg"};
+  document.getElementById("player-img").src=images[playerChoice];
+  document.getElementById("opponent-img").src=images[compChoice];
+
+  let result="";
+  if(playerChoice===compChoice) { 
+    result="It's a Draw!"; showPopup('draw');
+  } else if(
+      (playerChoice==='snake' && compChoice==='water') ||
+      (playerChoice==='water' && compChoice==='gun') ||
+      (playerChoice==='gun' && compChoice==='snake')
+  ){
+      result="You Win!"; playerScore++; showPopup('win');
+  } else { result="You Lose!"; opponentScore++; showPopup('lose'); }
+
+  document.getElementById("playerScore").innerText=playerScore;
+  document.getElementById("opponentScore").innerText=opponentScore;
+  if(playerScore>highScore){ highScore=playerScore; localStorage.setItem("swgHighScore",highScore);}
+  document.getElementById("highScore").innerText=highScore;
+  document.getElementById("result").innerText=result;
+}
+
+function showPopup(type){
+  let jokesArray, usedArray, bgColor;
+  if(type==='win'){ jokesArray=winJokes; usedArray=usedWin; bgColor='green'; }
+  else if(type==='lose'){ jokesArray=loseJokes; usedArray=usedLose; bgColor='red'; }
+  else { jokesArray=drawJokes; usedArray=usedDraw; bgColor='yellow'; }
+
+  if(jokesArray.length===0){ jokesArray.push(...usedArray); usedArray.length=0; }
+  const idx=Math.floor(Math.random()*jokesArray.length);
+  const joke=jokesArray.splice(idx,1)[0]; usedArray.push(joke);
+
+  document.getElementById("joke").innerText=joke;
+  document.querySelector("#popup h2").innerText=
+      type==='win'?"🎉 You Win! 🎉": type==='lose'?"😅 You Lose!":"🤝 Draw!";
+  document.getElementById("popup").style.backgroundColor=bgColor;
+  document.getElementById("popup").style.display="flex";
+
+  if(type==='win'){
+    for(let i=0;i<30;i++){
+      let conf=document.createElement("div");
+      conf.classList.add("confetti");
+      conf.style.left=Math.random()*window.innerWidth+"px";
+      conf.style.backgroundColor=`hsl(${Math.random()*360},100%,50%)`;
+      document.body.appendChild(conf);
+      setTimeout(()=>{ conf.remove(); },2000);
+    }
+  }
+}
+
+function closePopup(){ document.getElementById("popup").style.display="none"; }
+</script>
+</body>
+</html>
